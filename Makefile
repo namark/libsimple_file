@@ -25,4 +25,4 @@ uninstall:
 	@rmdir -p $(INCDIRS) 2> /dev/null || true
 	@echo Uninstall complete!
 
-.PHONY : install uninstall
+.PHONY : uninstall
