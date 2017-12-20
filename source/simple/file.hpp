@@ -24,6 +24,7 @@ namespace simple
 	static const string path_delimeters = R"(/\)"s;
 
 	inline size_type size(stream& file);
+	inline size_type size(stream&& file);
 
 	inline void dump(stream& from, char* to, size_type this_much);
 	template<typename Alloc = dfltAlloc>
@@ -142,10 +143,16 @@ namespace string_stack
 	inline size_type size(stream& file)
 	{
 		auto current = file.tellg();
-		file.seekg(0, file.end);
-		auto size = file.tellg();
+		auto ret = size(std::move(file));
 		file.seekg(current);
-		return size;
+		return ret;
+	}
+
+	inline size_type size(stream&& file)
+	{
+		file.seekg(0, file.end);
+		auto ret = file.tellg();
+		return ret;
 	}
 
 	inline void dump(stream& from, char* to, size_type this_much)
