@@ -215,31 +215,31 @@ namespace string_stack
 		return to <<= dump(from);
 	}
 
-	flags& flags::throws(stream::iostate these)
+	inline flags& flags::throws(stream::iostate these)
 	{
 		exceptions |= these;
 		return *this;
 	}
 
-	flags& flags::reads()
+	inline flags& flags::reads()
 	{
 		io |= stream::in;
 		return *this;
 	}
 
-	flags& flags::writes()
+	inline flags& flags::writes()
 	{
 		io |= stream::out;
 		return *this;
 	}
 
-	flags& flags::binary()
+	inline flags& flags::binary()
 	{
 		io |= stream::binary;
 		return *this;
 	}
 
-	flags& flags::no_buffer()
+	inline flags& flags::no_buffer()
 	{
 		buffering = false;
 		return *this;
@@ -353,24 +353,24 @@ namespace string_stack
 	}
 
 	template <typename String>
-	unsigned manipulator<String>::dec(unsigned amount)
+	inline unsigned manipulator<String>::dec(unsigned amount)
 	{
 		return size -= std::min(size, amount);
 	}
 
 	template <typename String>
-	manipulator<String>::manipulator(String& on, String delimeters)
+	inline manipulator<String>::manipulator(String& on, String delimeters)
 		: stack(&on), delimeters(delimeters)
 	{}
 
 	template <typename String>
-	manipulator<String>::manipulator(manipulator&& other) : manipulator(other)
+	inline manipulator<String>::manipulator(manipulator&& other) : manipulator(other)
 	{
 		other.release();
 	}
 
 	template <typename String>
-	manipulator<String>&& manipulator<String>::operator=(manipulator&& other)
+	inline manipulator<String>&& manipulator<String>::operator=(manipulator&& other)
 	{
 		*this = other;
 		other.release();
@@ -378,34 +378,34 @@ namespace string_stack
 	}
 
 	template <typename String>
-	manipulator<String>::~manipulator()
+	inline manipulator<String>::~manipulator()
 	{
 		while(size)
 			drop();
 	}
 
 	template <typename String>
-	void manipulator<String>::release()
+	inline void manipulator<String>::release()
 	{
 		size = 0;
 	}
 
 	template <typename String>
-	String manipulator<String>::pop()
+	inline String manipulator<String>::pop()
 	{
 		dec();
 		return string_stack::pop(*stack, delimeters);
 	};
 
 	template <typename String>
-	void manipulator<String>::drop()
+	inline void manipulator<String>::drop()
 	{
 		string_stack::drop(*stack, delimeters);
 		dec();
 	};
 
 	template <typename String>
-	auto manipulator<String>::push(const String& value) &
+	inline auto manipulator<String>::push(const String& value) &
 	-> manipulator<String>&
 	{
 		if(!value.empty())
@@ -418,7 +418,7 @@ namespace string_stack
 
 	template <typename String>
 	template <typename ...Args>
-	auto manipulator<String>::push(const String& value, Args... args) &
+	inline auto manipulator<String>::push(const String& value, Args... args) &
 	-> manipulator<String>&
 	{
 		push(value);
@@ -426,7 +426,7 @@ namespace string_stack
 	}
 
 	template <typename String>
-	auto manipulator<String>::push(const String& value) &&
+	inline auto manipulator<String>::push(const String& value) &&
 	-> manipulator<String>&&
 	{
 		push(value);
@@ -435,7 +435,7 @@ namespace string_stack
 
 	template <typename String>
 	template <typename ...Args>
-	auto manipulator<String>::push(const String& value, Args... args) &&
+	inline auto manipulator<String>::push(const String& value, Args... args) &&
 	-> manipulator<String>&&
 	{
 		std::move(*this).push(value);
