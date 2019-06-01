@@ -16,10 +16,10 @@ namespace simple
 	using std::string;
 	using stream = std::fstream;
 	using descriptor = std::unique_ptr<FILE, void(FILE*)>; //TODO: implement descriptor versions of all functions...
-	using dfltAlloc = std::allocator<char>;
+	using buffer_type = std::vector<char>;
 	using size_type = std::streamoff;
-	template<typename Alloc = dfltAlloc>
-	using buffer = std::vector<char, Alloc>;
+	template<typename Alloc = std::allocator<char>>
+	using buffer [[deprecated]] = std::vector<char, Alloc>;
 
 	static const string path_delimeters = R"(/\)"s;
 
@@ -27,24 +27,24 @@ namespace simple
 	inline size_type size(stream&& file);
 
 	inline void dump(stream& from, char* to, size_type this_much);
-	template<typename Alloc = dfltAlloc>
-	inline void dump(stream& from, buffer<Alloc>& to);
-	template<typename Alloc = dfltAlloc>
-	inline auto dump(stream& from) -> buffer<Alloc>;
+	template<typename Buffer = buffer_type>
+	inline void dump(stream& from, Buffer& to);
+	template<typename Buffer = buffer_type>
+	inline auto dump(stream& from) -> Buffer;
 
 	inline void dump(const char* from, size_t this_much, stream& to);
 	template<int N>
 	inline void dump(const char from[N], stream& to);
-	template<typename Alloc = dfltAlloc>
-	inline void dump(const buffer<Alloc>& from, stream& to);
+	template<typename Buffer = buffer_type>
+	inline void dump(const Buffer& from, stream& to);
 
 namespace operators
 {
 
-	template<typename Alloc = dfltAlloc>
-	inline void operator <<= (buffer<Alloc>& to, stream& from);
-	template<typename Alloc = dfltAlloc>
-	inline stream& operator <<= (stream& to, const buffer<Alloc>& from);
+	template<typename Buffer = buffer_type>
+	inline void operator <<= (Buffer& to, stream& from);
+	template<typename Buffer = buffer_type>
+	inline stream& operator <<= (stream& to, const Buffer& from);
 	inline stream& operator <<= (stream& to, stream& from);
 
 } // namespace operators
@@ -162,8 +162,8 @@ namespace string_stack
 			from.read(to, std::min(_size, this_much));
 	}
 
-	template<typename Alloc>
-	inline void dump(stream& from, buffer<Alloc>& to)
+	template<typename Buffer>
+	inline void dump(stream& from, Buffer& to)
 	{
 		auto _size = size(from);
 		if(-1 == _size)
@@ -172,10 +172,10 @@ namespace string_stack
 		from.read(to.data(), to.size());
 	}
 
-	template<typename Alloc>
-	inline auto dump(stream& from) -> buffer<Alloc>
+	template<typename Buffer>
+	inline auto dump(stream& from) -> Buffer
 	{
-		buffer<Alloc> to;
+		Buffer to;
 		dump(from, to);
 		return to;
 	}
@@ -191,20 +191,20 @@ namespace string_stack
 		to.write(from, N);
 	}
 
-	template<typename Alloc>
-	inline void dump(const buffer<Alloc>& from, stream& to)
+	template<typename Buffer>
+	inline void dump(const Buffer& from, stream& to)
 	{
 		dump(from.data(), from.size(), to);
 	}
 
-	template<typename Alloc>
-	inline void operators::operator <<= (buffer<Alloc>& to, stream& from)
+	template<typename Buffer>
+	inline void operators::operator <<= (Buffer& to, stream& from)
 	{
 		dump(from, to);
 	}
 
-	template<typename Alloc>
-	inline stream& operators::operator <<= (stream& to, const buffer<Alloc>& from)
+	template<typename Buffer>
+	inline stream& operators::operator <<= (stream& to, const Buffer& from)
 	{
 		dump(from, to);
 		return to;
@@ -450,12 +450,12 @@ namespace string_stack
 	inline void dump(stream&& from, char* to, size_type this_much)
 	{ dump(from, to, this_much); }
 
-	template<typename Alloc = dfltAlloc>
-	inline void dump(stream&& from, buffer<Alloc>& to)
+	template<typename Buffer = buffer_type>
+	inline void dump(stream&& from, Buffer& to)
 	{ dump(from, to); }
 
-	template<typename Alloc = dfltAlloc>
-	inline auto dump(stream&& from) -> buffer<Alloc>
+	template<typename Buffer = buffer_type>
+	inline auto dump(stream&& from) -> Buffer
 	{ return dump(from); }
 
 	inline void dump(const char* from, size_t this_much, stream&& to)
@@ -465,19 +465,19 @@ namespace string_stack
 	inline void dump(const char from[N], stream&& to)
 	{ dump<N>(from, to); }
 
-	template<typename Alloc = dfltAlloc>
-	inline void dump(const buffer<Alloc>& from, stream&& to)
+	template<typename Buffer = buffer_type>
+	inline void dump(const Buffer& from, stream&& to)
 	{ dump(from, to); }
 
 namespace operators
 {
 	inline stream& operator <<= (stream& to, stream&& from)
 	{ return to <<= from; }
-	template<typename Alloc = dfltAlloc>
-	inline void operator <<= (buffer<Alloc>& to, stream&& from)
+	template<typename Buffer = buffer_type>
+	inline void operator <<= (Buffer& to, stream&& from)
 	{ to <<= from; }
-	template<typename Alloc = dfltAlloc>
-	inline stream&& operator <<= (stream&& to, const buffer<Alloc>& from)
+	template<typename Buffer = buffer_type>
+	inline stream&& operator <<= (stream&& to, const Buffer& from)
 	{ return std::move(to <<= from); }
 	inline stream&& operator <<= (stream&& to, stream&& from)
 	{ return std::move(to <<= from); }
