@@ -12,10 +12,19 @@
 namespace simple
 { namespace file
 {
+	//TODO: wow, turns out there are actual file descriptors in POSIX, so need those here too, as an option
+
+	// TODO:
+	// class c_stream_deleter
+	// {
+	// 	public:
+	// 	void operator ()(FILE* file) const noexcept;
+	// };
+	// using c_stream = std::unique_ptr<FILE, c_stream_deleter>;
+
 	using namespace std::literals;
 	using std::string;
 	using stream = std::fstream;
-	using descriptor = std::unique_ptr<FILE, void(FILE*)>; //TODO: implement descriptor versions of all functions...
 	using buffer_type = std::vector<char>;
 	using size_type = std::streamoff;
 	template<typename Alloc = std::allocator<char>>
@@ -169,7 +178,7 @@ namespace string_stack
 		if(-1 == _size)
 			return;
 		to.resize(_size);
-		from.read(to.data(), to.size());
+		from.read(reinterpret_cast<char*>(to.data()), sizeof(*to.data())*to.size());
 	}
 
 	template<typename Buffer>
@@ -194,7 +203,7 @@ namespace string_stack
 	template<typename Buffer>
 	inline void dump(const Buffer& from, stream& to)
 	{
-		dump(from.data(), from.size(), to);
+		dump(reinterpret_cast<const char*>(from.data()), sizeof(*from.data())*from.size(), to);
 	}
 
 	template<typename Buffer>
@@ -456,7 +465,7 @@ namespace string_stack
 
 	template<typename Buffer = buffer_type>
 	inline auto dump(stream&& from) -> Buffer
-	{ return dump(from); }
+	{ return dump<Buffer>(from); }
 
 	inline void dump(const char* from, size_t this_much, stream&& to)
 	{ dump(from, this_much, to); }
