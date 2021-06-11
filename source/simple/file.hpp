@@ -1,5 +1,5 @@
-#ifndef _SIMPLE_FILE_HPP
-#define _SIMPLE_FILE_HPP
+#ifndef SIMPLE_FILE_HPP
+#define SIMPLE_FILE_HPP
 
 #include <iosfwd>
 #include <type_traits>
@@ -159,10 +159,22 @@ namespace string_stack
 
 	inline size_type size(stream&& file)
 	{
+		// TODO FIXME: does not work on text steams and generally is undefined behavior apparently -_-
 		file.seekg(0, file.end);
 		auto ret = file.tellg();
 		return ret;
 	}
+
+	// supa slow way
+	std::streamsize defined_size(stream& file)
+	{
+		file.ignore( std::numeric_limits<std::streamsize>::max() );
+		std::streamsize size = file.gcount();
+		file.clear();
+		file.seekg( 0, file.beg );
+		return size;
+	}
+	// just read it (trollface)
 
 	inline void dump(stream& from, char* to, size_type this_much)
 	{
