@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+#include <limits>
 
 namespace simple
 { namespace file
